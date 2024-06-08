@@ -1,0 +1,570 @@
+//Priority
+#include<iostream>
+using namespace std;
+int main()
+{
+    int bt[20],p[20],wt[20],tat[20],pr[20],i,j,n,total=0,pos,temp,avg_wt,avg_tat;
+    cout<<"Enter Total Number of Process:";
+    cin>>n;
+    cout<<"\nEnter Burst Time and Priority\n";
+    for(i=0;i<n;i++)
+    {
+        cout<<"\nP["<<i+1<<"]\n";
+        cout<<"Burst Time:";
+        cin>>bt[i];
+        cout<<"Priority:";
+        cin>>pr[i];
+        p[i]=i+1;           //contains process number
+    }
+    //sorting burst time, priority and process number in ascending order using selection sort
+    for(i=0;i<n;i++)
+    {
+        pos=i;
+        for(j=i+1;j<n;j++)
+        {
+            if(pr[j]<pr[pos])
+                pos=j;
+        }
+        temp=pr[i];
+        pr[i]=pr[pos];
+        pr[pos]=temp;
+        temp=bt[i];
+        bt[i]=bt[pos];
+        bt[pos]=temp;
+        temp=p[i];
+        p[i]=p[pos];
+        p[pos]=temp;
+    }
+    wt[0]=0;            //waiting time for first process is zero
+    //calculate waiting time
+    for(i=1;i<n;i++)
+    {
+        wt[i]=0;
+        for(j=0;j<i;j++)
+            wt[i]+=bt[j];
+        total+=wt[i];
+    }
+    avg_wt=total/n;      //average waiting time
+    total=0;
+    cout<<"\nProcess\t    Burst Time    \tWaiting Time\tTurnaround Time";
+    for(i=0;i<n;i++)
+    {
+        tat[i]=bt[i]+wt[i];     //calculate turnaround time
+        total+=tat[i];
+        cout<<"\nP["<<p[i]<<"]\t\t  "<<bt[i]<<"\t\t    "<<wt[i]<<"\t\t\t"<<tat[i];
+    }
+    avg_tat=total/n;     //average turnaround time
+    cout<<"\n\nAverage Waiting Time="<<avg_wt;
+    cout<<"\nAverage Turnaround Time="<<avg_tat;
+    return 0;
+}
+-------------------------------------------------------------------------------------------
+
+
+
+//SJF
+#include <iostream>
+using namespace std;
+
+int main() {
+
+	// Matrix for storing Process Id, Burst
+	// Time, Average Waiting Time & Average
+	// Turn Around Time.
+	int A[100][4];
+	int i, j, n, total = 0, index, temp;
+	float avg_wt, avg_tat;
+
+	cout << "Enter number of process: ";
+	cin >> n;
+
+	cout << "Enter Burst Time:" << endl;
+
+	// User Input Burst Time and alloting Process Id.
+	for (i = 0; i < n; i++) {
+		cout << "P" << i + 1 << ": ";
+		cin >> A[i][1];
+		A[i][0] = i + 1;
+	}
+
+	// Sorting process according to their Burst Time.
+	for (i = 0; i < n; i++) {
+		index = i;
+		for (j = i + 1; j < n; j++)
+			if (A[j][1] < A[index][1])
+				index = j;
+		temp = A[i][1];
+		A[i][1] = A[index][1];
+		A[index][1] = temp;
+
+		temp = A[i][0];
+		A[i][0] = A[index][0];
+		A[index][0] = temp;
+	}
+
+	A[0][2] = 0;
+	// Calculation of Waiting Times
+	for (i = 1; i < n; i++) {
+		A[i][2] = 0;
+		for (j = 0; j < i; j++)
+			A[i][2] += A[j][1];
+		total += A[i][2];
+	}
+
+	avg_wt = (float)total / n;
+	total = 0;
+	cout << "P	 BT	 WT	 TAT" << endl;
+
+	// Calculation of Turn Around Time and printing the
+	// data.
+	for (i = 0; i < n; i++) {
+		A[i][3] = A[i][1] + A[i][2];
+		total += A[i][3];
+		cout << "P" << A[i][0] << "	 " << A[i][1] << "	 " << A[i][2] << "	 " << A[i][3] << endl;
+	}
+
+	avg_tat = (float)total / n;
+	cout << "Average Waiting Time= " << avg_wt << endl;
+	cout << "Average Turnaround Time= " << avg_tat << endl;
+}
+
+
+
+------------------------------------------------------------------------------------------------------------
+
+
+
+//Producer Consumer
+
+#include <iostream>
+#include <cstdlib>
+
+using namespace std;
+
+int mutex = 1, full = 0, emptySlots = 3, x = 0;
+
+void producer();
+void consumer();
+int wait(int);
+int signal(int);
+
+int main()
+{
+    int n;
+    cout << "\n1. Producer\n2. Consumer\n3. Exit";
+    while (true)
+    {
+        cout << "\nEnter your choice: ";
+        cin >> n;
+        switch (n)
+        {
+            case 1: 
+                if ((mutex == 1) && (emptySlots != 0))
+                    producer();
+                else
+                    cout << "Buffer is full!!" << endl;
+                break;
+            case 2: 
+                if ((mutex == 1) && (full != 0))
+                    consumer();
+                else
+                    cout << "Buffer is empty!!" << endl;
+                break;
+            case 3:
+                exit(0);
+                break;
+            default:
+                cout << "Invalid choice! Please enter 1, 2, or 3." << endl;
+                break;
+        }
+    }
+    return 0;
+}
+
+int wait(int s)
+{
+    return (--s);
+}
+
+int signal(int s)
+{
+    return (++s);
+}
+
+void producer()
+{
+    mutex = wait(mutex);
+    full = signal(full);
+    emptySlots = wait(emptySlots);
+    x++;
+    cout << "\nProducer produces the item " << x << endl;
+    mutex = signal(mutex);
+}
+
+void consumer()
+{
+    mutex = wait(mutex);
+    full = wait(full);
+    emptySlots = signal(emptySlots);
+    cout << "\nConsumer consumes item " << x << endl;
+    x--;
+    mutex = signal(mutex);
+}
+
+
+---------------------------------------------------------------------------------------------------------------------
+
+
+
+// fcfs replacement
+
+#include<iostream>
+#include<vector>
+using namespace std;
+int main()
+{
+    int n;
+    cin>>n;
+    vector<int>arr;
+    for(int i=0;i<n;i++)
+    {
+        int data;
+        cin>>data;
+        arr.push_back(data);
+    }
+    int head;
+    cin>>head;
+    int total_seek_time=0;
+    for(int i=0;i<n;i++)
+    {
+        total_seek_time+=abs(arr[i]-head);
+        head=arr[i];
+    }
+    cout<<total_seek_time;
+}
+
+---------------------------------------------------------------------------------------------
+
+
+//Bankers Algo
+
+#include<iostream>
+#include<vector>
+#include<algorithm>
+using namespace std;
+bool helper(vector<int>&available,vector<int>&need)
+{
+    for(int i=0;i<available.size();i++)
+    {
+        if(need[i]>available[i])
+        {
+            return false;
+        }
+    }
+    return true;
+}
+void release(vector<int>&resource,vector<int>&available)
+{
+    
+    for(int i=0;i<available.size();i++)
+    {
+        available[i]+=resource[i];
+    }
+  
+}
+// void solve(vector<vector<int>>max,vector<vector<int>>allocation,vector<int>total)
+// {
+    
+// }
+int main()
+{
+    int n;
+    cin>>n;
+    int no_of_resource;
+    cin>>no_of_resource;
+   vector<vector<int>>max;
+   vector<vector<int>>allocation;
+   vector<vector<int>>need;
+   for(int i=0;i<n;i++)
+   {
+       vector<int>max_of_p;
+       for(int j=0;j<no_of_resource;j++)
+       {
+           int data;
+           cin>>data;
+           max_of_p.push_back(data);
+       }
+       max.push_back(max_of_p);
+   }
+   for(int i=0;i<n;i++)
+   {
+       vector<int>allocation_of_p;
+       for(int j=0;j<no_of_resource;j++)
+       {
+           int data;
+           cin>>data;
+           allocation_of_p.push_back(data);
+       }
+       allocation.push_back(allocation_of_p);
+   }
+   vector<int>available;
+   for(int i=0;i<no_of_resource;i++)
+   {
+       int data;
+       cin>>data;
+      available.push_back(data);
+   }
+ for(int i=0;i<n;i++)
+ {
+     vector<int>arr;
+     for(int j=0;j<no_of_resource;j++)
+     {
+         int data=max[i][j]-allocation[i][j];
+        arr.push_back(data);
+     }
+     need.push_back(arr);
+ }
+ cout<<"need : "<<endl;
+ for(auto it:need)
+ {
+     for(auto it1:it)
+     {
+         cout<<it1<<" ";
+     }
+     cout<<endl;
+ }
+ vector<int>safe_seq;
+ vector<bool>visited(n,false);
+ cout<<endl;
+ while(1)
+ {
+     bool done=true;
+     for(int i=0;i<n;i++)
+     {
+         if(helper(available,need[i])&&!visited[i])
+         {
+             visited[i]=true;
+             done=false;
+             safe_seq.push_back(i);
+              release(allocation[i],available);
+         }
+     }
+     if(done)
+     {
+         break;
+     }
+ }
+ if(safe_seq.size()==n)
+ {
+     for(auto it:safe_seq)
+     {
+         cout<<it<<" ";
+     }
+ }
+ else{
+     cout<<"System is not safe";
+ }
+}
+
+
+----------------------------------------------------------------------------------------------------
+
+//copy edit rename
+
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <cstdio>  // For std::rename
+#include <cstring> // For std::strerror
+
+using namespace std;
+
+// Function to copy content from source file to destination file
+void copyFile(const string& src, const string& dest) {
+    ifstream srcFile(src, ios::binary);
+    ofstream destFile(dest, ios::binary);
+
+    if (!srcFile.is_open() || !destFile.is_open()) {
+        cerr << "Error opening file(s) for copy." << endl;
+        return;
+    }
+
+    destFile << srcFile.rdbuf();
+
+    cout << "File copied successfully from " << src << " to " << dest << "." << endl;
+}
+
+// Function to edit (append text) to a file
+void editFile(const string& filename, const string& text) {
+    ofstream file(filename, ios::app);
+
+    if (!file.is_open()) {
+        cerr << "Error opening file for edit." << endl;
+        return;
+    }
+
+    file << text;
+
+    cout << "Text appended successfully to " << filename << "." << endl;
+}
+
+// Function to rename a file
+void renameFile(const string& oldName, const string& newName) {
+    if (rename(oldName.c_str(), newName.c_str()) != 0) {
+        cerr << "Error renaming file: " << std::strerror(errno) << endl;
+    } else {
+        cout << "File renamed successfully from " << oldName << " to " << newName << "." << endl;
+    }
+}
+
+int main() {
+    int choice;
+    string src, dest, filename, text, oldName, newName;
+
+    while (true) {
+        cout << "File Operation Menu:" << endl;
+        cout << "1. Copy File" << endl;
+        cout << "2. Edit File" << endl;
+        cout << "3. Rename File" << endl;
+        cout << "4. Exit" << endl;
+        cout << "Enter your choice: ";
+        cin >> choice;
+        cin.ignore(); // To ignore the newline character after the choice input
+
+        switch (choice) {
+            case 1:
+                cout << "Enter source file path: ";
+                getline(cin, src);
+                cout << "Enter destination file path: ";
+                getline(cin, dest);
+                copyFile(src, dest);
+                break;
+            case 2:
+                cout << "Enter file path: ";
+                getline(cin, filename);
+                cout << "Enter text to append: ";
+                getline(cin, text);
+                editFile(filename, text);
+                break;
+            case 3:
+                cout << "Enter current file name: ";
+                getline(cin, oldName);
+                cout << "Enter new file name: ";
+                getline(cin, newName);
+                renameFile(oldName, newName);
+                break;
+            case 4:
+                cout << "Exiting..." << endl;
+                return 0;
+            default:
+                cout << "Invalid choice. Please try again." << endl;
+        }
+
+        cout << endl;
+    }
+
+    return 0;
+}
+
+---------------------------------------------------------------------------------------------------------
+
+
+//fcfs disc
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int frames;
+    cin >> frames;
+    int pages;
+    cin >> pages;
+    vector<int> page(pages);
+    for (int i = 0; i < pages; i++) {
+        cin >> page[i];
+    }
+
+    vector<int> arr(frames, -1); // Initialize frame array with -1 indicating empty frames
+    int count = 0;
+    int pageFault = 0;
+
+    for (int i = 0; i < pages; i++) {
+        bool pageFound = false;
+
+        // Check if page is already in the frame
+        for (int j = 0; j < frames; j++) {
+            if (arr[j] == page[i]) {
+                pageFound = true;
+                break;
+            }
+        }
+
+        // If page is not found in frame, replace the oldest page
+        if (!pageFound) {
+            arr[count] = page[i];
+            count = (count + 1) % frames;
+            pageFault++;
+        }
+
+        // Print current state of frames
+        cout << "Page " << page[i] << ": ";
+        for (int j = 0; j < frames; j++) {
+            if (arr[j] != -1) {
+                cout << arr[j] << " ";
+            } else {
+                cout << "- ";
+            }
+        }
+        cout << endl;
+    }
+
+    cout << "Total page faults: " << pageFault << endl;
+    return 0;
+}
+---------------------------------------------------------------------------------------------------
+//fifo
+
+
+#include<iostream>
+using namespace std;
+void findWaitingTime(int processes[], int n,
+int bt[], int wt[]){
+wt[0] = 0;
+for (int i = 1; i < n ; i++ )
+wt[i] = bt[i-1] + wt[i-1] ;
+}
+void findTurnAroundTime( int processes[], int n,
+int bt[], int wt[], int tat[])
+{
+for (int i = 0; i < n ; i++)
+tat[i] = bt[i] + wt[i];
+}
+void findavgTime( int processes[], int n, int bt[])
+{
+int wt[n], tat[n], total_wt = 0, total_tat = 0;
+findWaitingTime(processes, n, bt, wt);
+findTurnAroundTime(processes, n, bt, wt, tat);
+cout << "Processes "<< " Burst time " << " Waiting time " << " Turn around time\n";
+for (int i=0; i<n; i++)
+{
+total_wt = total_wt + wt[i];
+total_tat = total_tat + tat[i];
+cout << " " << i+1 << "\t\t" << bt[i] <<"\t " << wt[i] <<"\t\t " << tat[i] <<endl;
+}
+cout << "Average waiting time = " << (float)total_wt / (float)n;
+cout << "\nAverage turn around time = " << (float)total_tat / (float)n;
+}
+int main()
+{
+int A,B,C,D,E;
+cout<<"ENTER JOBS"<<endl;
+cin >>A>>B>>C>>D>>E;
+int job[] = { A, B, C, D, E};
+int n = sizeof job / sizeof job[0];
+int B1,B2,B3,B4,B5;
+cout<<"ENTER BURST TIME"<<endl;
+cin>>B1>>B2>>B3>>B4>>B5;
+int burst_time[] = {B1, B2, B3, B4, B5};
+findavgTime(job, n, burst_time);
+return 0;
+}
